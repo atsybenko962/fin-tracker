@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+option go_package = "github.com/task_platform/tools/user-service/user-service.proto";
+
+package user_service;
+
+service UserService {
+  rpc CreateUserGrpc(CreateUserRequest) returns (CreateUserResponse);
+  rpc GetUserByEmailGrpc(GetUserRequest) returns(GetUserResponse);
+  rpc DeleteUserGrpc(DeleteUserRequest) returns (DeleteUserResponse);
+}
+
+service UserServiceHealthGrpc {
+  rpc PingGrpc(PingRequest) returns (PingResponse) {}
+}
+
+//Запросы
+message CreateUserRequest {
+  string email = 1;
+  string password_hash = 2;
+}
+
+message GetUserRequest {
+  string email = 1;
+}
+
+message DeleteUserRequest{
+  string user_id = 1;
+}
+
+//Ответы
+message CreateUserResponse {
+  string user_id = 1;
+}
+
+message GetUserResponse {
+  string user_id = 1;
+  string email = 2;
+  string created_at = 3;
+}
+
+message DeleteUserResponse {}
+
+// Health check сообщения
+
+message PingRequest {}
+
+message PingResponse {
+  bool data = 1;
+}
