@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/task_platform/tools/user-service/user-service.proto";
+option go_package = ".;user_service";
 
 package user_service;
 
