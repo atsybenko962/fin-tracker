@@ -88,6 +88,9 @@ func (s *UserService) GetUserByEmailGrpc(ctx context.Context, request *g.GetUser
 	}()
 
 	user, err := httptools.SelectChannels[repository.User](ctx, ch, chErr, info, request, s.logger)
+	if err != nil {
+		return nil, err
+	}
 	return UserToGetUserResponse(user), err
 }
 
