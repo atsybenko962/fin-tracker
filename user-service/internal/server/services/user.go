@@ -61,9 +61,66 @@ func (s *UserService) CreateUserGrpc(ctx context.Context, request *g.CreateUserR
 }
 
 func (s *UserService) GetUserByEmailGrpc(ctx context.Context, request *g.GetUserRequest) (*g.GetUserResponse, error) {
-	panic("Implement me")
+	info := "grpc service for searching for a user by email"
+
+	if request == nil {
+		s.logger.Warn(info, zap.String("error", errors.StatusInvalidArgumentError), zap.Any("request", request))
+		return nil, status.Error(codes.InvalidArgument, errors.StatusInvalidArgumentError)
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, DefaultServiceTimeout)
+	defer cancel()
+
+	ch := make(chan *repository.User)
+	chErr := make(chan error)
+
+	go func() {
+		defer close(ch)
+		defer close(chErr)
+
+		result, err := s.repo.GetUserByEmail(ctx, request.String())
+		if err != nil {
+			chErr <- err
+		}
+
+		ch <- &result
+		return
+	}()
+
+	user, err := httptools.SelectChannels[repository.User](ctx, ch, chErr, info, request, s.logger)
+	return UserToGetUserResponse(user), err
 }
 
 func (s *UserService) DeleteUserGrpc(ctx context.Context, request *g.DeleteUserRequest) (*g.DeleteUserResponse, error) {
-	panic("Implement me")
+	info := "grpc service for deleting a user"
+
+	if request == nil {
+		s.logger.Warn(info, zap.String("error", errors.StatusInvalidArgumentError), zap.Any("request", request))
+		return nil, status.Error(codes.InvalidArgument, errors.StatusInvalidArgumentError)
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, DefaultServiceTimeout)
+	defer cancel()
+
+	chErr := make(chan error)
+	ch := make(chan *struct{})
+
+	go func() {
+		defer close(chErr)
+
+		id, err := grpcUuidToUUID(request)
+		if err != nil {
+			chErr <- err
+			return
+		}
+
+		err = s.repo.DeleteUser(ctx, id)
+		if err != nil {
+			chErr <- err
+			return
+		}
+	}()
+
+	_, err := httptools.SelectChannels[struct{}](ctx, ch, chErr, info, request, s.logger)
+	return &g.DeleteUserResponse{}, err
 }

@@ -36,7 +36,8 @@ message CreateUserResponse {
 message GetUserResponse {
   string user_id = 1;
   string email = 2;
-  string created_at = 3;
+  string password_hash = 3;
+  string created_at = 4;
 }
 
 message DeleteUserResponse {}
