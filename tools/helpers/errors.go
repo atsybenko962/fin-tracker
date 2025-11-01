@@ -1,5 +1,7 @@
 package helpers
 
+import "fmt"
+
 const (
 	StatusSuccess                 = ""
 	StatusDatabaseBuildQueryError = "failed to build select query"
@@ -12,3 +14,8 @@ const (
 	StatusUnauthorizedError       = "unauthorized user request"
 	StatusInternalError           = "internal error"
 )
+
+// Wrap оборачивает ошибки для прокидывания наверх по стеку вызова
+func Wrap(msg string, err error) error {
+	return fmt.Errorf("%s: %w", msg, err)
+}

@@ -38,7 +38,7 @@ func SetServer(db repository.DBTX, cfg configcore.ServerConfig, logger *zap.Logg
 	return serverGRPC, nil
 }
 
-func Run(cfg configcore.ServerConfig, server Server, logger zap.Logger) error {
+func Run(cfg configcore.ServerConfig, server Server, logger *zap.Logger) error {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	g, gCtx := errgroup.WithContext(ctx)
