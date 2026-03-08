@@ -1,4 +1,4 @@
-module github.com/task_platform/tools
+module github.com/fin/tools
 
 go 1.24.4
 

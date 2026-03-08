@@ -1,0 +1,46 @@
+services:
+  auth_db:
+    container_name: auth_db
+    image: postgres:15-alpine
+    restart: always
+    env_file:
+      - .env
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${AUTH_DB_PORT}:${DB_PORT}"
+    volumes:
+      - "./data/postgres:/var/lib/postgresql/data:rw"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}" ]
+      interval: 2s
+      timeout: 10s
+      retries: 5
+    networks:
+      - fin_network
+
+  migrator:
+    container_name: auth_migrator
+    image: ghcr.io/kukymbr/goose-docker:3.22.1
+    environment:
+      - GOOSE_DRIVER=postgres
+      - GOOSE_DBSTRING=host=auth_db port=${DB_PORT:-5432} user=${DB_USER} password=${DB_PASSWORD} dbname=${DB_NAME}
+    volumes:
+      - ./migrations:/migrations
+    restart: "no"
+    command: >
+      -path=/migrations
+      -env=up
+    env_file:
+      - .env
+    depends_on:
+      auth_db:
+        condition: service_healthy
+    networks:
+      - fin_network
+
+networks:
+  fin_network:
+    external: true
